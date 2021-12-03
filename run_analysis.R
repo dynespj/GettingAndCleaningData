@@ -9,7 +9,7 @@ df_test <- read.csv("UCI HAR Dataset/test/X_test.txt", sep = "", header = FALSE)
 df_all <- rbind(df_train, df_test)
 
 # Set descriptive feature names
-feat_names <- readLines("features.txt")
+feat_names <- readLines("UCI HAR Dataset/features.txt")
 feat_names <- gsub("\\d*\\s(.*)", "\\1", feat_names)
 names(df_all) <- feat_names
 
@@ -26,7 +26,7 @@ act_all <- rbind(act_train, act_test)
 names(act_all) <- "ActivityDescription"
 
 # Set descriptive activity names
-act_names <- readLines("activity_labels.txt")
+act_names <- readLines("UCI HAR Dataset/activity_labels.txt")
 act_names <- gsub("\\d\\s(.*)", "\\1", act_names)
 act_all %>% mutate(Activity = act_names[Activity])
 
