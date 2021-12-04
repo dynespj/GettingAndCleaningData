@@ -48,3 +48,6 @@ df_tidy <- cbind(subj_all, act_all, raw_all)
 df_tidy %>% 
   group_by(ActivityDescription, SubjectNumber) %>%
   summarize_all(list(mean = mean))
+
+## Export tidied data
+write.csv(df_tidy, "all_tidied.csv")
