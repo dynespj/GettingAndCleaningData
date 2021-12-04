@@ -1,62 +1,50 @@
 library(dplyr)
 
-## Part I: Process dataset
-# Read in 561-feature vectors from X_train & X_test
-df_train <- read.csv("UCI HAR Dataset/train/X_train.txt", sep = "", header = FALSE)
-df_test <- read.csv("UCI HAR Dataset/test/X_test.txt", sep = "", header = FALSE)
-
-# Merge training & test datasets
-df_all <- rbind(df_train, df_test)
-
-# Set descriptive feature names
-feat_names <- readLines("UCI HAR Dataset/features.txt")
-feat_names <- gsub("\\d*\\s(.*)", "\\1", feat_names)
-names(df_all) <- feat_names
-
-# Select only the measurements on the mean and standard deviation
-df_all <- df_all %>% select(contains("mean"), contains("std"))
-
-## Part II: Process activities
-# Read in activity targets y_train & y_test
+## Part I: Load all data
+raw_train <- read.csv("UCI HAR Dataset/train/X_train.txt", sep = "", header = FALSE)
+raw_test <- read.csv("UCI HAR Dataset/test/X_test.txt", sep = "", header = FALSE)
+subj_train <- read.csv("UCI HAR Dataset/train/subject_train.txt", sep = "", header = FALSE)
+subj_test <- read.csv("UCI HAR Dataset/test/subject_test.txt", sep = "", header = FALSE)
 act_train <- read.csv("UCI HAR Dataset/train/y_train.txt", sep = "", header = FALSE)
 act_test <- read.csv("UCI HAR Dataset/test/y_test.txt", sep = "", header = FALSE)
 
-# Merge training & test targets
+# Part II : Merge data
+raw_all <- rbind(raw_train, raw_test)
+subj_all <- rbind(subj_train, subj_test)
 act_all <- rbind(act_train, act_test)
+
+# Part III: Tidy up variable names & values
+feat_names <- readLines("UCI HAR Dataset/features.txt")
+feat_names <- gsub("\\d*\\s(.*)", "\\1", feat_names)
+names(raw_all) <- feat_names
+
+names(raw_all) <- gsub("Acc", "Accelerometer", names(raw_all))
+names(raw_all) <- gsub("Gyro", "Gyroscope", names(raw_all))
+names(raw_all) <- gsub("BodyBody", "Body", names(raw_all))
+names(raw_all) <- gsub("Mag", "Magnitude", names(raw_all))
+names(raw_all) <- gsub("^t", "Time", names(raw_all))
+names(raw_all) <- gsub("^f", "Frequency", names(raw_all))
+names(raw_all) <- gsub("tBody", "TimeBody", names(raw_all))
+names(raw_all) <- gsub("-mean()", "Mean", names(raw_all), ignore.case = TRUE)
+names(raw_all) <- gsub("-std()", "STD", names(raw_all), ignore.case = TRUE)
+names(raw_all) <- gsub("-freq()", "Frequency", names(raw_all), ignore.case = TRUE)
+names(raw_all) <- gsub("angle", "Angle", names(raw_all))
+names(raw_all) <- gsub("gravity", "Gravity", names(raw_all))
+
+names(subj_all) <- "SubjectNumber"
 names(act_all) <- "ActivityDescription"
 
-# Set descriptive activity names
 act_names <- readLines("UCI HAR Dataset/activity_labels.txt")
 act_names <- gsub("\\d\\s(.*)", "\\1", act_names)
-act_all %>% mutate(Activity = act_names[Activity])
+act_all <- act_all %>% mutate(ActivityDescription = act_names[ActivityDescription])
 
-## Part III: Process subjects
-# Read in subjects from train & test
-subj_train <- read.csv("UCI HAR Dataset/train/subject_train.txt", sep = "", header = FALSE)
-subj_test <- read.csv("UCI HAR Dataset/test/subject_test.txt", sep = "", header = FALSE)
+# Part IV: Subset measurements on the mean and standard deviation
+raw_all <- raw_all %>% select(contains("MEAN"), contains("STD"))
 
-# Merge training & test subjects
-subj_all <- rbind(subj_train, subj_test)
-names(subj_all) <- "SubjectNumber"
+## Part V: Combine into a single tidy dataset
+df_tidy <- cbind(subj_all, act_all, raw_all) 
 
-## Part IV: Combine into a single tidy dataset
-df_tidy <- cbind(subj_all, act_all, df_all) 
-
-# Tidy up variable names
-names(df_tidy)<-gsub("Acc", "Accelerometer", names(df_tidy))
-names(df_tidy)<-gsub("Gyro", "Gyroscope", names(df_tidy))
-names(df_tidy)<-gsub("BodyBody", "Body", names(df_tidy))
-names(df_tidy)<-gsub("Mag", "Magnitude", names(df_tidy))
-names(df_tidy)<-gsub("^t", "Time", names(df_tidy))
-names(df_tidy)<-gsub("^f", "Frequency", names(df_tidy))
-names(df_tidy)<-gsub("tBody", "TimeBody", names(df_tidy))
-names(df_tidy)<-gsub("-mean()", "Mean", names(df_tidy), ignore.case = TRUE)
-names(df_tidy)<-gsub("-std()", "STD", names(df_tidy), ignore.case = TRUE)
-names(df_tidy)<-gsub("-freq()", "Frequency", names(df_tidy), ignore.case = TRUE)
-names(df_tidy)<-gsub("angle", "Angle", names(df_tidy))
-names(df_tidy)<-gsub("gravity", "Gravity", names(df_tidy))
-
-## Part V: Compute summary statistics by activity and subject
+## Part VI: Compute summary statistics by activity and subject
 df_tidy %>% 
   group_by(ActivityDescription, SubjectNumber) %>%
   summarize_all(list(mean = mean))
