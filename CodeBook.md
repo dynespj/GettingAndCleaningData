@@ -49,5 +49,5 @@ The run_analysis.R script prepares a tidied dataset
 
 6. **Creates a second, independent tidy data set with the average of each variable for each activity and each subject**
 * Done using dplyr's "groupby" and "summarize_all" methods
-* All data is exported to to a file called TidiedData.csv
+* All data is exported to to a file called all_tidied.csv
 
