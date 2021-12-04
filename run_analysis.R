@@ -50,4 +50,4 @@ df_tidy %>%
   summarize_all(list(mean = mean))
 
 ## Export tidied data
-write.csv(df_tidy, "all_tidied.csv")
+write.table(df_tidy, "all_tidied.txt", row.names = FALSE)
